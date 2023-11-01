@@ -2,6 +2,7 @@ package com.example.sampleweb.service;
 
 import com.example.sampleweb.domain.Score;
 import com.example.sampleweb.domain.Student;
+import com.example.sampleweb.domain.StudentInquiryDto;
 import com.example.sampleweb.repository.ScoreRepository;
 import com.example.sampleweb.repository.StudentRepository;
 import org.springframework.stereotype.Service;
@@ -38,5 +39,10 @@ public class StudentService {
         int id = studentRepository.addStudent(student);
         System.out.println(id);
         return id;   // 확인!!
+    }
+
+    public List<Student> getStudentInquiry(StudentInquiryDto studentInquiryDto) {
+        List<Student> students = studentRepository.findByInquiryDto(studentInquiryDto);
+        return students;
     }
 }

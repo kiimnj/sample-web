@@ -3,8 +3,7 @@ package com.example.sampleweb.controller;
 import com.example.sampleweb.domain.Student;
 import com.example.sampleweb.domain.Score;
 import com.example.sampleweb.domain.StudentInquiryDto;
-import com.example.sampleweb.repository.ScoreRepository;
-import com.example.sampleweb.repository.StudentRepository;
+import com.example.sampleweb.service.ScoreService;
 import com.example.sampleweb.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -17,13 +16,13 @@ import java.util.List;
 @RequestMapping("/students")
 public class StudentController {
     private final StudentService studentService;
-    private final ScoreRepository scoreRepository;
+    private final ScoreService scoreService;
 
     @Autowired
     public StudentController(StudentService studentService,
-                             ScoreRepository scoreRepository) {
+                             ScoreService scoreService) {
         this.studentService = studentService;
-        this.scoreRepository = scoreRepository;
+        this.scoreService = scoreService;
     }
 
     @GetMapping
@@ -43,7 +42,7 @@ public class StudentController {
     @GetMapping("/studentUpdate/{id}")
     public String updateScore(@PathVariable int id,  Model model){
         Student studentInfo = studentService.getStudentInfo(id);
-        Score score = scoreRepository.findById(id);  // 점수 없는 경우만 입력한다
+        Score score = scoreService.getStudentScore(id);  // 점수 없는 경우만 입력한다
         System.out.println("score null ? " + score);
         if(score == null) {
             model.addAttribute("student", studentInfo);
@@ -58,7 +57,7 @@ public class StudentController {
                               @ModelAttribute Score score){
         Student studentInfo = studentService.getStudentInfo(id);
         System.out.println(score.getId() + ":" + score.getSPoint());
-        scoreRepository.addScore(score);
+        scoreService.addStudentScore(score);
         studentService.updateStudent(id);
         return "redirect:/students";
     }
@@ -73,9 +72,12 @@ public class StudentController {
         studentService.addNewStudent(student);
         return "redirect:/students";
     }
-    //코드 보충
+
     @GetMapping("/inquiry")
-    public String getStudentsInquiry(@ModelAttribute StudentInquiryDto studentInquiryDto) {
-        return "";
+    public String getStudentsInquiry(@ModelAttribute StudentInquiryDto studentInquiryDto,
+                                     Model model){
+        List<Student> students = studentService.getStudentInquiry(studentInquiryDto);
+        model.addAttribute("students", students);
+        return "student/studentList";
     }
 }
