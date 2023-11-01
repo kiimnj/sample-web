@@ -1,7 +1,10 @@
 package com.example.sampleweb.controller;
 
-import com.example.sampleweb.model.Student;
-import com.example.sampleweb.model.StudentDto;
+import com.example.sampleweb.domain.Student;
+import com.example.sampleweb.domain.Score;
+import com.example.sampleweb.domain.StudentInquiryDto;
+import com.example.sampleweb.repository.ScoreRepository;
+import com.example.sampleweb.repository.StudentRepository;
 import com.example.sampleweb.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -14,56 +17,65 @@ import java.util.List;
 @RequestMapping("/students")
 public class StudentController {
     private final StudentService studentService;
+    private final ScoreRepository scoreRepository;
+
     @Autowired
-    public StudentController(StudentService studentService) {
+    public StudentController(StudentService studentService,
+                             ScoreRepository scoreRepository) {
         this.studentService = studentService;
+        this.scoreRepository = scoreRepository;
     }
 
     @GetMapping
     public String getAllStudents(Model model){
         List<Student> allStudents = studentService.getAllStudents();
-        model.addAttribute("students", allStudents);
+        model.addAttribute("students",allStudents);
         return "student/studentList";
     }
 
-    @GetMapping("/addstudent")
-    public String addstudent(){
-        return "student/studentForm";
-    }
-
-    @PostMapping("/addstudent")
-    public String addstudent(@ModelAttribute Student student){
-        studentService.addStudent(student);
-        return "redirect:/students";
-    }
-
-    @GetMapping("/studentInfo/{studentId}")
-    public String getstudentInfo(@PathVariable int studentId,
-                              Model model){
-        Student student = studentService.getStudentInfo(studentId);
-        model.addAttribute("student", student);
+    @GetMapping("/studentInfo/{id}")
+    public String getAllStudents(@PathVariable int id,  Model model){
+        Student studentInfo = studentService.getStudentInfo(id);
+        model.addAttribute("student",studentInfo);
         return "student/studentInfo";
     }
 
-    @GetMapping("/updatestudent/{studentId}")
-    public String updatestudent(@PathVariable int studentId,
-                             Model model){
-        Student student = studentService.getStudentInfo(studentId);
-        model.addAttribute("student", student);
-        return "student/studentUpdateForm";
+    @GetMapping("/studentUpdate/{id}")
+    public String updateScore(@PathVariable int id,  Model model){
+        Student studentInfo = studentService.getStudentInfo(id);
+        Score score = scoreRepository.findById(id);  // 점수 없는 경우만 입력한다
+        System.out.println("score null ? " + score);
+        if(score == null) {
+            model.addAttribute("student", studentInfo);
+            return "student/studentUpdateForm";
+        } else {
+            return "redirect:/students";
+        }
     }
 
-    @PostMapping("/updatestudent/{studentId}")
-    public String updatestudent(@PathVariable int studentId,
-                             @ModelAttribute StudentDto studentDto){
-        System.out.println("updatestudent 호출됨");
-        studentService.updateStudent(studentId, studentDto);
+    @PostMapping("/updateScore/{id}")
+    public String updateScore(@PathVariable int id,
+                              @ModelAttribute Score score){
+        Student studentInfo = studentService.getStudentInfo(id);
+        System.out.println(score.getId() + ":" + score.getSPoint());
+        scoreRepository.addScore(score);
+        studentService.updateStudent(id);
         return "redirect:/students";
     }
 
-    @GetMapping("/deletestudent/{studentId}")
-    public String deletestudent(@PathVariable int studentId){
-        studentService.removeStudent(studentId);
+    @GetMapping("/addStudent")
+    public String addNewStudent(){
+        return "student/studentForm";
+    }
+
+    @PostMapping("/addStudent")
+    public String addNewStudent(@ModelAttribute Student student){
+        studentService.addNewStudent(student);
         return "redirect:/students";
+    }
+    //코드 보충
+    @GetMapping("/inquiry")
+    public String getStudentsInquiry(@ModelAttribute StudentInquiryDto studentInquiryDto) {
+        return "";
     }
 }

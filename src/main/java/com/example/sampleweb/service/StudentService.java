@@ -1,57 +1,42 @@
 package com.example.sampleweb.service;
 
-import com.example.sampleweb.model.Student;
-import com.example.sampleweb.model.StudentDto;
+import com.example.sampleweb.domain.Score;
+import com.example.sampleweb.domain.Student;
+import com.example.sampleweb.repository.ScoreRepository;
 import com.example.sampleweb.repository.StudentRepository;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Slf4j
 @Service
 public class StudentService {
     private final StudentRepository studentRepository;
+    private final ScoreRepository scoreRepository;
 
-    @Autowired
-    public StudentService(StudentRepository studentRepository) {
+    public StudentService(StudentRepository studentRepository, ScoreRepository scoreRepository) {
         this.studentRepository = studentRepository;
+        this.scoreRepository = scoreRepository;
     }
 
-    public List<Student> getAllStudents(){
+    public List<Student> getAllStudents() {
         return studentRepository.findAll();
     }
 
-    public Student getStudentInfo(int studentId){
-        return studentRepository.findById(studentId);
+    public Student getStudentInfo(int id){
+        return studentRepository.findById(id);
     }
 
-    public String removeStudent(int studentId){
-        Student removedStudent = studentRepository.removeById(studentId);
-        String result = "";
-        if(removedStudent != null)
-            result = "정상적으로 삭제되었습니다.";
-        else
-            result = "삭제 과정에서 오류가 발생했습니다.";
-        return result;
+    public void updateStudent(int id){
+        Student findStudent = studentRepository.findById(id);
+        Score findScore = scoreRepository.findById(id);
+        float resScore = (findStudent.getPoint() + findScore.getSPoint())/2.0f;
+        findStudent.setPoint(resScore);
+        studentRepository.updateStudent(findStudent);
     }
 
-    public String addStudent(Student student){
-        String result = "";
-        Student addedStudent = studentRepository.add(student);
-        System.out.println(addedStudent);
-        if(addedStudent == null)
-            result = "정상적으로 추가되었습니다.";
-        else
-            result = "등록 과정에서 오류가 발생했습니다.";
-        return result;
-    }
-
-    public String updateStudent(int studentId, StudentDto studentDto){
-        Student foundStudent = studentRepository.findById(studentId);
-        foundStudent.setPoint(studentDto.getPoint());
-        studentRepository.update(studentId, foundStudent);
-        return "수정 완료";
+    public int addNewStudent(Student student){
+        int id = studentRepository.addStudent(student);
+        System.out.println(id);
+        return id;   // 확인!!
     }
 }

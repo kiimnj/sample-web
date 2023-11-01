@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybasis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.sample.repository.StudentRepository">
+    <select id="findAll" resultType="Student">
+        SELECT *
+        FROM student
+    </select>
+    <select id="findById" resultType="Student">
+        SELECT *
+        FROM student 
+        WHERE id=#{id}
+    </select>
+    <insert id="addStudent" parameterType="Student" keyProperty="id" useGeneratedKeys="true">
+        INSERT into student (name,univ,birth,email,point)
+        VALUES (#{name},#{univ},#{birth},#{email},#{point})
+    </insert>
+    <update id="updateStudent" parameterType="Student">
+        UPDATE student
+        SET point = #{point}
+        WHERE id =#{id}
+    </update>
+
+    <!-- mybatis 공식독스 보기 -->
+    <select id="findByInquiryDto" parameterType="StudentInquiryDto">
+        SELECT *
+        FROM student
+        <where> univ like #{univ}
+            <if test="univ != null and univ != ''">
+                univ like #{univ}
+            </if>
+            <if test="name != null and name != ''">
+                name like #{name}
+            </if>
+<!--            코드 보충 -->
+            <if test="point ">
+                point like #{point}
+            </if>
+        </where>
+    </select>
+</mapper>
